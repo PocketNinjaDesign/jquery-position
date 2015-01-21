@@ -5,17 +5,17 @@ Just some code for positioning flash style :-D
 
 #### x position
 ```
-$('#box').x()
+$('#box').x();
 ```
 
 #### y position
 ```
-$('#box').y()
+$('#box').y();
 ```
 
 #### Set new x position
 ```
-$('#box').x(100)
+$('#box').x(100);
 ```
 
 #### animate to a new x position
