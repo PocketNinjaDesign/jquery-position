@@ -1,3 +1,4 @@
+/*
 ;(function() {
   var xANDy = function(direction, positionsArray, options) {
     var
@@ -60,3 +61,70 @@
     return xANDy.call(this, 'top', ['top', 'middle', 'bottom'], options);
   };
 })();
+*/
+
+
+;(function() {
+
+  var
+    getXY = function(_direction, _type) {
+      switch(_type) {
+        case "abs":
+          return $(this).offset()[_direction];
+          break;
+        case "abs-all":
+          return $(this).offset();
+        case "rel-all":
+          return $(this).position();
+        default:
+          return $(this).position()[_direction];
+      }
+    },
+  
+    xyPosition = function(_direction, _options) {
+      var
+        opt = $.extend({
+          val: (isNaN(_options) ? null : _options)
+        }, _options, {});
+
+      switch(typeof _options) {
+        case "number":
+          $(this).animate({
+            top: (_direction === 'top')? _options: getXY.call(this, 'top'),
+            left: (_direction === 'left')? _options: getXY.call(this, 'left')
+          }, 0);
+          break;
+        case "string":
+          return getXY.call(this, _direction, _options);
+          break;
+        default:
+          return getXY.call(this, _direction);
+      }
+
+      return this;
+    };
+
+  $.fn.x = function(options) {
+    return xyPosition.call(this, 'left', options);
+  }
+  
+  $.fn.y = function(options) {
+    return xyPosition.call(this, 'top', options);
+  };
+
+  $.fn.xy = function(options) {
+    // options:
+    // {left:0, top:0}, string, num
+    // Additonal : {} - animation settings
+    
+    switch(typeof options) {
+      case "string":
+        return getXY.call(this, 'all', options + '-all');
+        break;
+      default:
+        return getXY.call(this, 'all', 'rel-all');
+    }
+    return this;
+  }
+})();
+
