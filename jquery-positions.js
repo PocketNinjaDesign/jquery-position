@@ -108,67 +108,99 @@
       var
         opt = $.extend({
           val: (isNaN(_options) ? null : _options),
-          x: null,
-          y: null,
-          directions: null,
+          type: undefined,
+          x: undefined,
+          y: undefined,
+          direction: undefined,
           stepDuration: 0,
           duration: 0,
           fn: $.noop()
         }, _options, {});
 
-      for(var i = 0; i < this.length; i++) {
+      $.each(this, function(index, element) {
+        var $this = $(element);
 
         if (opt.direction === 'both') {
           // Both x and y
-
           setTimeout(function(_my) {
-            $(_my).animate({
+            $this.animate({
               left: opt.x,
               top: opt.y
             }, opt.duration, opt.fn);
-          }(this[i]), (opt.stepDuration * i) );
-          console.log('stepDuration:' + opt.stepDuration * i);
+          }, (opt.stepDuration * index) );
         }
         else {
           // Just one direction
           
-          switch(typeof _options) {
-            case "number":
-              $(this[i]).animate({
-                left: (opt.direction === 'left')? _options: getXY.call(this[i], 'left'),
-                top: (opt.direction === 'top')? _options: getXY.call(this[i], 'top')
-              }, opt.duration, opt.fn);
-              break;
-            case "string":
-              return getXY.call(this[i], opt.direction, _options);
-              break;
-            default:
-              return getXY.call(this[i], opt.direction);
+          if(arguments.length === 2) {
+            
+          }
+          else {
+            switch(type) {
+              case "number":
+                $this.animate({
+                  left: (opt.direction === 'left')? _options: getXY.call(element, 'left'),
+                  top: (opt.direction === 'top')? _options: getXY.call(element, 'top')
+                }, opt.duration, opt.fn);
+                break;
+              case "string":
+                return getXY.call(element, opt.direction, _options);
+                break;
+              default:
+                return getXY.call(element, opt.direction);
+            }
           }
         }
-      }
-      
+      });
+
       return this;
+    },
+    
+    innerFnXY = function(_options, _direction) {
+      var
+        that = this,
+        opt = {
+          direction: _direction
+        };
+      return function() {
+        if (arguments.length === 1) {
+          switch(typeof arguments[0]) {
+            case "number":
+              opt.type = 'number';
+              break;
+            case "string":
+              opt.type = 'string';
+              break;
+            default:
+              opt.type = undefined;
+          }
+
+          return xyPosition.call(that, arguments[0]);
+        }
+        else if (arguments.length === 2) {
+          opt = $.extend(opt, arguments[1], {});
+          return xyPosition.call(that, opt, arguments[0]);
+        }
+      }
     };
 
+    
+  
   $.fn.x = function(options) {
-    if ( isObject.apply(this, options) ) {
-      options.direction = 'left';
-    }
-    return xyPosition.call(this, options);
+    innerFnXY.call(this, options, 'left');
   }
 
   $.fn.y = function(options) {
-    if ( isObject.apply(this, options) ) {
-      options.direction = 'top';
-    }
-    return xyPosition.call(this, options);
+    options = $.extend({
+      direction: 'top'
+    }, options, {});
+    return xyPosition.call(this, options, 'top');
   };
 
   $.fn.xy = function(options) {
     var opt;
 
-    if (arguments.length === 1) {
+    if (options === undefined || arguments.length === 1) {
       opt = options;
       switch(typeof opt) {
         case "string":
@@ -207,8 +239,7 @@
 $element.x();
 $element.x(10);
 $element.x('abs');
-$element.x({
-  val: 10,
+$element.x(10, {
   duration: 0,
   stepDuration: 0,
   fn: $.noop()
