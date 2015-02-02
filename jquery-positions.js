@@ -33,25 +33,30 @@
       return isInnerWrap.call(this, 'string', arguments);
     },
     
+    isUndefined = function() {
+      return isInnerWrap.call(this, 'undefined', arguments);
+    },
+    
   
-    getXY = function(_direction, _type) {
-      switch(_type) {
+    getXY = function(_direction, _relativeTo) {
+      var $this = $(this);
+      switch(_relativeTo) {
         case "abs":
-          return $(this).offset()[_direction];
+          return $this.offset()[_direction];
           break;
         case "abs-all":
-          return $(this).offset();
+          return $this.offset();
         case "rel-all":
-          return $(this).position();
+          return $this.position();
         default:
-          return $(this).position()[_direction];
+          return $this.position()[_direction];
       }
     },
   
     xyPosition = function(_options) {
       var
         opt = $.extend({
-          val: (isNaN(_options) ? null : _options),
+          val: undefined,
           type: undefined,
           relativeTo: undefined,
           x: undefined,
@@ -61,44 +66,60 @@
           duration: 0,
           fn: $.noop()
         }, _options, {});
-
+     
       $.each(this, function(index, element) {
         var $this = $(element);
 
         if (opt.direction === 'both') {
-          // Both x and y
-          setTimeout(function(_my) {
-            $this.animate({
-              left: opt.x,
-              top: opt.y
-            }, opt.duration, opt.fn);
-          }, (opt.stepDuration * index) );
-        }
-        else {
-          // Just one direction
           
-          if(arguments.length === 2) {
+          if (isUndefined(opt.x, opt.y)) {
+            if (opt.relativeTo === undefined) {
+              opt.val = getXY.call(element, opt.direction, opt.relativeTo);
+            }
+            else {
+              opt.val = getXY.call(element, opt.direction, opt.relativeTo);
+            }
+            return false;
+          }
+
+          if (opt.relativeTo !== undefined) {
+            opt.val = getXY.call(element, opt.direction, opt.relativeTo);
+            return false;
+          }
+          else if (isUndefined(opt.x, opt.y)) {
             
           }
-          else {
-            switch(type) {
-              case "number":
-                $this.animate({
-                  left: (opt.direction === 'left')? _options: getXY.call(element, 'left'),
-                  top: (opt.direction === 'top')? _options: getXY.call(element, 'top')
-                }, opt.duration, opt.fn);
-                break;
-              case "string":
-                return getXY.call(element, opt.direction, _options);
-                break;
-              default:
-                return getXY.call(element, opt.direction);
-            }
+          else if (isNumber(opt.x, opt.y) ) {
+            setTimeout(function() {
+              $this.animate({
+                left: opt.x,
+                top: opt.y
+              }, opt.duration, opt.fn);
+            }, (opt.stepDuration * index) );
           }
+        }
+        else {
+
+          if (opt.relativeTo !== undefined) {
+            opt.val = getXY.call(element, opt.direction, opt.relativeTo);
+            return false;
+          }
+          else if(isUndefined(opt.x, opt.y)) {
+            opt.val = getXY.call(element, opt.direction);
+            return false;
+          }
+          else {
+            $this.animate({
+              left: (opt.x !== undefined)? opt.x: getXY.call(element, 'left'),
+              top: (opt.y !== undefined)? opt.y: getXY.call(element, 'top')
+            }, opt.duration, opt.fn);
+          }
+
+          return this;
         }
       });
 
-      return this;
+      return (isNumber(opt.val) || isObject(opt.val)) ? opt.val : this;
     },
 
     /**
@@ -137,23 +158,27 @@
         directionValue = _arg[0];
       }
 
-      if (_arg === undefined) {
+      if (_arg.length < 1) {
+        // Undefined 'get-pos'
         // return X OR Y Position
         return xyPosition.call(self, options);
       }
       else if(_arg.length === 1) {
+        // Num - 'set-pos'
+        // String - 'get-pos'
         // Checks for Number OR String values
         return xyPosition.call(self, $.extend(optSetXY(options, directionValue), {
           relativeTo: (isString(_arg[0])) ? _arg[0] : undefined
         }));
       }
       else if(_arg.length === 2) {
+        // Num, Function - 'set-anim-pos'
         // Animate to position then return this
         
         if ( isObject(_arg[1]) ) {
           animOptions = _arg[1];
         }
-        
+
         return xyPosition.call(self, $.extend(
           optSetXY(options, directionValue),
           animOptions
@@ -167,26 +192,31 @@
     
   
   $.fn.x = function() {
-    innerXY.call(this, arguments, 'left');
+    return innerXY.call(this, arguments, 'left');
   };
 
   $.fn.y = function() {
-    innerXY.call(this, arguments, 'top');
+    return innerXY.call(this, arguments, 'top');
   };
 
-  $.fn.xy = function(options) {
-    var opt;
-
-    if (_arguments === undefined) {
+  $.fn.xy = function() {
+    var opt = {
+      direction: 'both'
+    };
+    
+    if (arguments.length < 1) {
+      // return {} of x&y position
+      return xyPosition.call(this, opt);
+    }
+    else if(arguments.length === 1) {
+      opt.relativeTo = (isString(arguments[0])) ? arguments[0] + '-all' : 'rel-all';
+      return xyPosition.call(this, opt);
       // return {} of x&y position
     }
-    else if(_arguments.length === 1) {
-      // return {} of x&y position
-    }
-    else if(_arguments.length === 2) {
+    else if(arguments.length === 2) {
       // return this
     }
-    else if(_arguments.length === 3) {
+    else if(arguments.length === 3) {
       // return this
     }
     else {
@@ -230,10 +260,25 @@
 
 
 /*
-
+ * directions: (left, top) OR both
+ * 
+ * ACTIONS
+ * get-pos
+ * set-pos
+ * set-anim-pos
+ * 
+ * 
+ * /
+// Undefined 'get-pos'
 $element.x();
+
+// Number 'set-pos'
 $element.x(10);
+
+// String 'get-pos'
 $element.x('abs');
+
+// Num, Object - 'set-anim-pos'
 $element.x(10, {
   duration: 0,
   stepDuration: 0,
@@ -241,9 +286,16 @@ $element.x(10, {
 });
 
 
+// Undefined - 'get-pos'
 $element.xy();
-$element.xy('abs');
+        
+// Num, Num - 'set-pos'
 $element.xy(10, 100);
+
+// String - 'get-pos'
+$element.xy('abs');
+
+// Num, Num, Object - 'set-anim-pos'
 $element.xy(10, 100, {
   duration: 0,
   stepDuration: 0,
