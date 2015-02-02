@@ -1,94 +1,38 @@
-/*
-;(function() {
-  var xANDy = function(direction, positionsArray, options) {
-    var
-      align = {},
-      newAlign = {},
-      animateObj = {},
-      opt = $.extend({
-        val: (isNaN(options) ? null : options),
-        getAlign: direction,
-        setAlign: '',
-        duration: 0,
-        fn: function() {}
-      }, options || {});
-
-    direction = direction || 'left';
-    positionsArray = positionsArray || ['left','center','right'];
-  
-    for( var i = 0; i < this.length; i++ ) {
-      if (direction === 'left') {
-        diameter = $(this[i]).innerWidth();
-        startPos = $(this[i]).offset().left;
-      }
-      else if (direction === 'top') {
-        diameter = $(this[i]).innerHeight();
-        startPos = $(this[i]).offset().top;
-      }
-
-      align[positionsArray[0]] = startPos;
-      align[positionsArray[1]] = startPos + (diameter / 2);
-      align[positionsArray[2]] = startPos + diameter;
-
-      newAlign[positionsArray[0]] = 0;
-      newAlign[positionsArray[1]] = diameter / 2;
-      newAlign[positionsArray[2]] = diameter;
-
-      if(opt.val === null && opt.setAlign.length < 1) {
-        // return startPos position / left or top
-        return align[opt.getAlign];
-      }
-      else if(opt.setAlign.length > 0) {
-        // align object axis to new coordinate
-        animateObj[direction] = opt.val - newAlign[opt.setAlign];
-        $(this[i]).animate(animateObj, opt.duration, opt.fn);
-      }
-      else {
-        // SET to new position / left or top
-        animateObj[direction] = opt.val;
-        $(this[i]).animate(animateObj, opt.duration, opt.fn);
-      }
-    }
-    
-    return this;
-  };
-
-  $.fn.x = function(options) {
-    return xANDy.call(this, 'left', ['left', 'center', 'right'], options);
-  };
-  
-  $.fn.y = function(options) {
-    return xANDy.call(this, 'top', ['top', 'middle', 'bottom'], options);
-  };
-})();
-*/
-
-
 ;(function() {
 
   var
   
-    isObject = function(arg) {
-      var response = true;
+    /**
+     *
+     * @param {String} _type
+     * @param {Array} _arguments
+     * @returns {Boolean}
+     */
+    isInnerWrap = function(_type, _arguments) {
+      var
+        response = true;
       
-      for (var i = 0; i < arguments.length; i++) {
-        if ( typeof arguments[i] !== 'object' ) {
+      // Start with third item onwards
+      for (var i = 0; i < _arguments.length; i++) {
+        if ( typeof _arguments[i] !== _type ) {
           response = false;
         }
       }
       return response;
     },
     
-    isNumber = function(arg) {
-      var response = true;
-      
-      for (var i = 0; i < arguments.length; i++) {
-        if ( typeof arguments[i] !== 'number' ) {
-          response = false;
-        }
-      }
-      return response;
+    isObject = function() {
+      return isInnerWrap.call(this, 'object', arguments);
     },
+    
+    isNumber = function() {
+      return isInnerWrap.call(this, 'number', arguments);
+    },
+
+    isString = function() {
+      return isInnerWrap.call(this, 'string', arguments);
+    },
+    
   
     getXY = function(_direction, _type) {
       switch(_type) {
@@ -109,6 +53,7 @@
         opt = $.extend({
           val: (isNaN(_options) ? null : _options),
           type: undefined,
+          relativeTo: undefined,
           x: undefined,
           y: undefined,
           direction: undefined,
@@ -155,51 +100,100 @@
 
       return this;
     },
-    
-    innerFnXY = function(_options, _direction) {
-      var
-        that = this,
-        opt = {
-          direction: _direction
-        };
-      return function() {
-        if (arguments.length === 1) {
-          switch(typeof arguments[0]) {
-            case "number":
-              opt.type = 'number';
-              break;
-            case "string":
-              opt.type = 'string';
-              break;
-            default:
-              opt.type = undefined;
-          }
 
-          return xyPosition.call(that, arguments[0]);
+    /**
+     * 
+     * @param {Object} opt
+     * @param {Number} value
+     * @returns {Object}
+     */
+    optSetXY = function(opt, value) {
+      return $.extend(opt, {
+        x: (opt.direction === 'left') ? value : undefined,
+        y: (opt.direction === 'top') ? value : undefined
+      });
+    },
+
+    /**
+     *
+     * @param {Array} _arg
+     *   0: []
+     *   1: [Number] OR [String]
+     *   2: [Number, Object]
+     * @param {String} _direction
+     * @returns {Function|String}
+     */
+    innerXY = function(_arg, _direction) {
+      var
+        directionValue = undefined,
+        self = this,
+        options = {
+          direction: _direction
+        },
+        animOptions = {};
+
+      // Checks if argument 1 is a Number
+      if ( isNumber(_arg[0]) ) {
+        directionValue = _arg[0];
+      }
+
+      if (_arg === undefined) {
+        // return X OR Y Position
+        return xyPosition.call(self, options);
+      }
+      else if(_arg.length === 1) {
+        // Checks for Number OR String values
+        return xyPosition.call(self, $.extend(optSetXY(options, directionValue), {
+          relativeTo: (isString(_arg[0])) ? _arg[0] : undefined
+        }));
+      }
+      else if(_arg.length === 2) {
+        // Animate to position then return this
+        
+        if ( isObject(_arg[1]) ) {
+          animOptions = _arg[1];
         }
-        else if (arguments.length === 2) {
-          opt = $.extend(opt, arguments[1], {});
-          return xyPosition.call(that, opt, arguments[0]);
-        }
+        
+        return xyPosition.call(self, $.extend(
+          optSetXY(options, directionValue),
+          animOptions
+        ));
+      }
+      else {
+        return 'incorrect arguments';
       }
     };
 
     
   
-  $.fn.x = function(options) {
-    innerFnXY.call(this, options, 'left');
-  }
+  $.fn.x = function() {
+    innerXY.call(this, arguments, 'left');
+  };
 
-  $.fn.y = function(options) {
-    options = $.extend({
-      direction: 'top'
-    }, options, {});
-    return xyPosition.call(this, options, 'top');
+  $.fn.y = function() {
+    innerXY.call(this, arguments, 'top');
   };
 
   $.fn.xy = function(options) {
     var opt;
 
+    if (_arguments === undefined) {
+      // return {} of x&y position
+    }
+    else if(_arguments.length === 1) {
+      // return {} of x&y position
+    }
+    else if(_arguments.length === 2) {
+      // return this
+    }
+    else if(_arguments.length === 3) {
+      // return this
+    }
+    else {
+      return 'incorrect arguments';
+    }
+
+    /*
     if (options === undefined || arguments.length === 1) {
       opt = options;
       switch(typeof opt) {
@@ -228,9 +222,10 @@
           }, arguments[2]));
       }
     }
+    */
 
     return this;
-  }
+  };
 })();
 
 
