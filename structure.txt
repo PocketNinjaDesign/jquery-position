@@ -1,0 +1,24 @@
+
+.x() .y()
+Phase 1
+
+Check number of arguments
+
+0: Return position
+1: Check for number OR string
+   Return this OR Number
+2: Check for number AND Object
+   Return this
+
+
+.xy()
+Phase 1
+
+Check number of arguments
+
+0: Return xy position object {}
+1: Return document position object {}
+2: Check for numbers
+   Return this
+3: Check for 2 numbers and an object
+   Return this
