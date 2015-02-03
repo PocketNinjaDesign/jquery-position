@@ -1,7 +1,7 @@
 ;(function() {
 
   var
-  
+
     getXY = function(_direction, _relativeTo) {
       var $this = $(this);
       switch(_relativeTo) {
@@ -16,7 +16,7 @@
           return $this.position()[_direction];
       }
     },
-  
+
     xyPosition = function(_options) {
       var
         opt = $.extend({
@@ -31,7 +31,7 @@
           duration: 0,
           complete: $.noop()
         }, _options, {});
-     
+
       $.each(this, function(index, element) {
         var
           $this = $(element);
@@ -56,7 +56,7 @@
     },
 
     /**
-     * 
+     *
      * @param {Object} opt
      * @param {Number} value
      * @returns {Object}
@@ -143,7 +143,7 @@
       status: 'get-pos',
       relativeTo: 'rel-all'
     };
-    
+
     if (arguments.length < 1) {
       // Undefined
       return xyPosition.call(this, opt);
@@ -163,11 +163,11 @@
       // Numbers x AND y AND Object
       if ($.isNumber(arguments[0], arguments[1])) {
         opt.status = 'set-pos';
-        
+
         if ( $.isObject(arguments[2]) ) {
           $.extend(opt, arguments[2]);
         }
-        
+
         return xyPosition.call(this, $.extend(opt, {
           x: arguments[0],
           y: arguments[1]
