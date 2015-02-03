@@ -36,99 +36,22 @@
         var
           $this = $(element);
 
-        // ACTIONS
-        // get-pos
-        // set-pos
-        // set-anim-pos
-        // 
-        // if get-pos
-        //   check both or left/top
-        // if set-pos
-        //   check both or left/top
-        // if set-pos-anim
-        //   check both or left/top
-        //
-        //
-        //
-
         if (opt.status === 'get-pos') {
           opt.val = getXY.call(element, opt.direction, opt.relativeTo);
           return false;
         }
         else if (opt.status === 'set-pos') {
-
           setTimeout(function() {
-            $this.animate({
-              left: opt.x,
-              top: opt.y
-            }, opt.duration, opt.complete);
-          }, (opt.stepDuration * index) );
-          /*
-          switch (opt.direction) {
-            case 'both':
-              
-              // set position for both, 2 numbers or 2 numbers + object
-              break;
-            default:
-              // left / top
-          }*/
-        }
-        else if (opt.status === 'set-pos-anim') {
-          
-        }
-
-
-        /*
-        if (opt.direction === 'both') {
-
-          if ($.isUndefined(opt.x, opt.y)) {
-            if (opt.relativeTo === undefined) {
-              opt.val = getXY.call(element, opt.direction, opt.relativeTo);
-            }
-            else {
-              opt.val = getXY.call(element, opt.direction, opt.relativeTo);
-            }
-            return false;
-          }
-
-          if (opt.relativeTo !== undefined) {
-            opt.val = getXY.call(element, opt.direction, opt.relativeTo);
-            return false;
-          }
-          else if ($.isUndefined(opt.x, opt.y)) {
-            
-          }
-          else if ($.isNumber(opt.x, opt.y) ) {
-            setTimeout(function() {
-              $this.animate({
+              $this.stop().animate({
                 left: opt.x,
                 top: opt.y
               }, opt.duration, opt.complete);
-            }, (opt.stepDuration * index) );
-          }
+            }, (opt.stepDuration * index)
+          );
         }
-        else {
-
-          if (opt.relativeTo !== undefined) {
-            opt.val = getXY.call(element, opt.direction, opt.relativeTo);
-            return false;
-          }
-          else if($.isUndefined(opt.x, opt.y)) {
-            opt.val = getXY.call(element, opt.direction);
-            return false;
-          }
-          else {
-            $this.animate({
-              left: (opt.x !== undefined)? opt.x: getXY.call(element, 'left'),
-              top: (opt.y !== undefined)? opt.y: getXY.call(element, 'top')
-            }, opt.duration, opt.fn);
-          }
-
-          return this;
-        }
-        */
       });
 
+      // Return a Value, Object or this
       return ($.isNumber(opt.val) || $.isObject(opt.val)) ? opt.val : this;
     },
 
@@ -138,7 +61,7 @@
      * @param {Number} value
      * @returns {Object}
      */
-    optSetXY = function(opt, value) {
+    optSetXorY = function(opt, value) {
       return $.extend(opt, {
         x: (opt.direction === 'left') ? value : undefined,
         y: (opt.direction === 'top') ? value : undefined
@@ -182,26 +105,26 @@
             options.relativeTo = _arg[0];
           }
           else {
-            throw 'incorrect argument type';
+            throw 'Expected Number OR String';
             return null;
           }
-          return xyPosition.call(self, optSetXY(options, directionValue));
+          return xyPosition.call(self, optSetXorY(options, directionValue));
 
         case 2:
           // Number, Object
           if ( $.isNumber(_arg[0]) && $.isObject(_arg[1]) ) {
             options.status = 'set-pos';
             return xyPosition.call(self, $.extend(
-              optSetXY(options, directionValue),
+              optSetXorY(options, directionValue),
               _arg[1]
             ));
           }
           else {
-            throw 'incorrect arguments';
+            throw 'Expected Number & Object';
           }
 
         default:
-          throw 'incorrect number arguments';
+          throw 'Incorrect number of arguments';
       }
     };
 
@@ -226,99 +149,38 @@
       return xyPosition.call(this, opt);
     }
     else if(arguments.length === 1) {
-      // Number OR String
+      // String
       if ( $.isString(arguments[0]) ) {
         opt.relativeTo = arguments[0] + '-all';
+        return xyPosition.call(this, opt);
       }
-      return xyPosition.call(this, opt);
-    }
-    else if(arguments.length === 2) {
-      // return this
-    }
-    else if(arguments.length === 3) {
-      // return this
-    }
-    else {
-      return 'incorrect arguments';
-    }
-
-    /*
-    if (options === undefined || arguments.length === 1) {
-      opt = options;
-      switch(typeof opt) {
-        case "string":
-          return getXY.call(this, 'all', opt + '-all');
-          break;
-        default:
-          return getXY.call(this, 'all', 'rel-all');
+      else {
+        throw 'Expected String';
       }
     }
-    else if(arguments.length === 2) {
-      if (isNumber.apply(this, arguments)) {
-        xyPosition.call(this, $.extend({
+    else if(arguments.length === 2 || arguments.length === 3) {
+      // Numbers x AND y
+      // Numbers x AND y AND Object
+      if ($.isNumber(arguments[0], arguments[1])) {
+        opt.status = 'set-pos';
+        
+        if ( $.isObject(arguments[2]) ) {
+          $.extend(opt, arguments[2]);
+        }
+        
+        return xyPosition.call(this, $.extend(opt, {
           x: arguments[0],
-          y: arguments[1],
-          direction: 'both'
+          y: arguments[1]
         }));
       }
-    }
-    else if (arguments.length === 3) {
-      if ( isNumber.apply(this, [arguments[0], arguments[1]]) && isObject.apply(this, arguments[2]) ) {
-        xyPosition.call(this, $.extend({
-            x: arguments[0],
-            y: arguments[1],
-            direction: 'both'
-          }, arguments[2]));
+      else {
+        throw 'Expected 2 Numbers & OR Object';
       }
     }
-    */
+    else {
+      return 'Incorrect number of arguments';
+    }
 
     return this;
   };
 })();
-
-
-/*
- * directions: (left, top) OR both
- * 
- * ACTIONS
- * get-pos
- * set-pos
- * set-anim-pos
- * 
- * 
- * /
-// Undefined 'get-pos'
-$element.x();
-
-// Number 'set-pos'
-$element.x(10);
-
-// String 'get-pos'
-$element.x('abs');
-
-// Num, Object - 'set-anim-pos'
-$element.x(10, {
-  duration: 0,
-  stepDuration: 0,
-  complete: $.noop()
-});
-
-
-// Undefined - 'get-pos'
-$element.xy();
-        
-// Num, Num - 'set-pos'
-$element.xy(10, 100);
-
-// String - 'get-pos'
-$element.xy('abs');
-
-// Num, Num, Object - 'set-anim-pos'
-$element.xy(10, 100, {
-  duration: 0,
-  stepDuration: 0,
-  complete: $.noop()
-});
-
-*/
