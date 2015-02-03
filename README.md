@@ -3,34 +3,21 @@ Just some code for positioning flash style :-D
 
 ## Code examples
 
-#### x position relative
+#### Get x or y Position
 ```
 $('#box').x();
-```
-
-#### x position
-```
-$('#box').x('abs');
-```
-
-#### y position
-```
 $('#box').y();
 ```
 
-#### Set new x position
+###### Get Document x position
+```
+$('#box').x('abs');
+```
+###### Set x position
 ```
 $('#box').x(100);
 ```
-
-#### animate to a new x position
-```
-$('#box').x(900, {
-  duration: 1000
-});
-```
-
-#### animate multiple items to a new x position with steps
+###### Set x position + animation
 ```
 $('.box').x(900, {
   duration: 1000,
@@ -41,23 +28,19 @@ $('.box').x(900, {
 });
 ```
 
-#### Get x & y position relative
+#### Get x & y position
 ```
 $('#box').xy();
 ```
-
-#### Get x & y position document absolute
+###### Get x & y document position
 ```
 $('#box').xy('abs');
 ```
-
-#### Set new x & y position
+###### Set new x & y position
 ```
 $('#box').xy(100, 100);
 ```
-
-
-#### animate multiple items to a new x & y position with steps
+###### Set new x & y position + animation
 ```
 $('.box').xy(900, 200, {
   duration: 1000,
