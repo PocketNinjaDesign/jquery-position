@@ -20,8 +20,7 @@
     xyPosition = function(_options) {
       var
         opt = $.extend({
-          val: undefined,
-          type: undefined,
+          finalValue: undefined,
           status: undefined,
           relativeTo: undefined,
           x: undefined,
@@ -37,7 +36,7 @@
           $this = $(element);
 
         if (opt.status === 'get-pos') {
-          opt.val = getXY.call(element, opt.direction, opt.relativeTo);
+          opt.finalValue = getXY.call(element, opt.direction, opt.relativeTo);
           return false;
         }
         else if (opt.status === 'set-pos') {
@@ -52,7 +51,7 @@
       });
 
       // Return a Value, Object or this
-      return ($.isNumber(opt.val) || $.isObject(opt.val)) ? opt.val : this;
+      return ($.isNumber(opt.finalValue) || $.isObject(opt.finalValue)) ? opt.finalValue : this;
     },
 
     /**
@@ -62,9 +61,11 @@
      * @returns {Object}
      */
     optSetXorY = function(opt, value) {
+      var od = opt.direction;
+
       return $.extend(opt, {
-        x: (opt.direction === 'left') ? value : undefined,
-        y: (opt.direction === 'top') ? value : undefined
+        x: (od === 'left' || od === 'both') ? value : undefined,
+        y: (od === 'top' || od === 'both') ? value : undefined
       });
     },
 
@@ -75,43 +76,60 @@
      *   1: [Number] OR [String]
      *   2: [Number, Object]
      * @param {String} _direction
+     * @param {Object} _xyOptions
      * @returns {Function|String}
      */
-    innerXY = function(_arg, _direction) {
+    innerXY = function(_arg, _direction, _xyOptions) {
       var
         directionValue = undefined,
         self = this,
-        options = {
+        options = $.extend({
           direction: _direction,
           status: 'get-pos'
-        };
+        }, _xyOptions);
 
       // Checks if argument 1 is a Number
       if ( $.isNumber(_arg[0]) ) {
         directionValue = _arg[0];
       }
 
-      switch(_arg.length) {
-        case 0:
-          // Undefined
-          return xyPosition.call(self, options);
+      if (_arg.length < 1) {
+        // Undefined
+        return xyPosition.call(self, options);
 
-        case 1:
-          // Number OR String
-          if ($.isNumber(_arg[0])) {
-            options.status = 'set-pos';
-          }
-          else if ($.isString(_arg[0])) {
-            options.relativeTo = _arg[0];
-          }
-          else {
-            throw 'Expected Number OR String';
-            return null;
-          }
+      }
+      else if (_arg.length === 1) {
+        // x OR y: Number OR String
+        // x & y: Number OR String
+        if ($.isNumber(_arg[0])) {
+          options.status = 'set-pos';
           return xyPosition.call(self, optSetXorY(options, directionValue));
+        }
+        else if ($.isString(_arg[0])) {
+          options.relativeTo = _arg[0] + ((options.direction === 'both') ? '-all': '');
+          return xyPosition.call(self, options);
+        }
+        else {
+          throw 'Expected Number OR String';
+        }
+      }
+      else if (_arg.length === 2 || _arg.length === 3) {
+        // Number, Object
+        if (options.direction === 'both') {
+          if ($.isNumber(_arg[0], _arg[1])) {
+            options.status = 'set-pos';
 
-        case 2:
-          // Number, Object
+            if ( $.isObject(_arg[2]) ) {
+              $.extend(options, _arg[2]);
+            }
+
+            return xyPosition.call(this, $.extend(options, {
+              x: _arg[0],
+              y: _arg[1]
+            }));
+          }
+        }
+        else {
           if ( $.isNumber(_arg[0]) && $.isObject(_arg[1]) ) {
             options.status = 'set-pos';
             return xyPosition.call(self, $.extend(
@@ -122,9 +140,10 @@
           else {
             throw 'Expected Number & Object';
           }
-
-        default:
-          throw 'Incorrect number of arguments';
+        }
+      }
+      else {
+        throw 'Incorrect number of arguments';
       }
     };
 
@@ -138,49 +157,8 @@
   };
 
   $.fn.xy = function() {
-    var opt = {
-      direction: 'both',
-      status: 'get-pos',
+    return innerXY.call(this, arguments, 'both', {
       relativeTo: 'rel-all'
-    };
-
-    if (arguments.length < 1) {
-      // Undefined
-      return xyPosition.call(this, opt);
-    }
-    else if(arguments.length === 1) {
-      // String
-      if ( $.isString(arguments[0]) ) {
-        opt.relativeTo = arguments[0] + '-all';
-        return xyPosition.call(this, opt);
-      }
-      else {
-        throw 'Expected String';
-      }
-    }
-    else if(arguments.length === 2 || arguments.length === 3) {
-      // Numbers x AND y
-      // Numbers x AND y AND Object
-      if ($.isNumber(arguments[0], arguments[1])) {
-        opt.status = 'set-pos';
-
-        if ( $.isObject(arguments[2]) ) {
-          $.extend(opt, arguments[2]);
-        }
-
-        return xyPosition.call(this, $.extend(opt, {
-          x: arguments[0],
-          y: arguments[1]
-        }));
-      }
-      else {
-        throw 'Expected 2 Numbers & OR Object';
-      }
-    }
-    else {
-      return 'Incorrect number of arguments';
-    }
-
-    return this;
+    });
   };
 })();
