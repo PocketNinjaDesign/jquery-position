@@ -1,8 +1,6 @@
-describe('IS', function() {
+describe("jpn.is", function() {
 
-  describe('Object', function() {
-    beforeEach(function() {
-    });
+  describe("jpn.isObject()", function() {
 
     it("returns true if the argument is a single object", function() {
       expect(jpn.isObject({})).toBeTruthy();
@@ -21,9 +19,7 @@ describe('IS', function() {
     });
   });
 
-  describe('Number', function() {
-    beforeEach(function() {
-    });
+  describe("jpn.isNumber()", function() {
 
     it("returns true if the argument is a single number", function() {
       expect(jpn.isNumber(100)).toBeTruthy();
@@ -42,9 +38,7 @@ describe('IS', function() {
     });
   });
 
-  describe('String', function() {
-    beforeEach(function() {
-    });
+  describe("jpn.isString()", function() {
 
     it("returns true if the argument is a single string", function() {
       expect(jpn.isString('string')).toBeTruthy();
@@ -63,9 +57,7 @@ describe('IS', function() {
     });
   });
 
-  describe('jpn.isArray', function() {
-    beforeEach(function() {
-    });
+  describe("jpn.isArray()", function() {
 
     it("returns true if the argument is a single array", function() {
       expect(jpn.isArray([1])).toBeTruthy();
@@ -84,11 +76,8 @@ describe('IS', function() {
     });
   });
 
-  describe("jpn.isUndefined", function() {
+  describe("jpn.isUndefined()", function() {
     var egg, cheese;
-    
-    beforeEach(function() {
-    });
 
     it("returns true if the argument is a single undefined", function() {
       expect(jpn.isUndefined(undefined)).toBeTruthy();

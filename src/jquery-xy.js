@@ -51,7 +51,7 @@
       });
 
       // Return a Value, Object or this
-      return ($.isNumber(opt.finalValue) || $.isObject(opt.finalValue)) ? opt.finalValue : this;
+      return (jpn.isNumber(opt.finalValue) || jpn.isObject(opt.finalValue)) ? opt.finalValue : this;
     },
 
     /**
@@ -89,7 +89,7 @@
         }, _xyOptions);
 
       // Checks if argument 1 is a Number
-      if ( $.isNumber(_arg[0]) ) {
+      if ( jpn.isNumber(_arg[0]) ) {
         directionValue = _arg[0];
       }
 
@@ -101,11 +101,11 @@
       else if (_arg.length === 1) {
         // x OR y: Number OR String
         // x & y: Number OR String
-        if ($.isNumber(_arg[0])) {
+        if (jpn.isNumber(_arg[0])) {
           options.status = 'set-pos';
           return xyPosition.call(self, optSetXorY(options, directionValue));
         }
-        else if ($.isString(_arg[0])) {
+        else if (jpn.isString(_arg[0])) {
           options.relativeTo = _arg[0] + ((options.direction === 'both') ? '-all': '');
           return xyPosition.call(self, options);
         }
@@ -116,10 +116,10 @@
       else if (_arg.length === 2 || _arg.length === 3) {
         // Number, Object
         if (options.direction === 'both') {
-          if ($.isNumber(_arg[0], _arg[1])) {
+          if (jpn.isNumber(_arg[0], _arg[1])) {
             options.status = 'set-pos';
 
-            if ( $.isObject(_arg[2]) ) {
+            if ( jpn.isObject(_arg[2]) ) {
               $.extend(options, _arg[2]);
             }
 
@@ -130,7 +130,7 @@
           }
         }
         else {
-          if ( $.isNumber(_arg[0]) && $.isObject(_arg[1]) ) {
+          if ( jpn.isNumber(_arg[0]) && jpn.isObject(_arg[1]) ) {
             options.status = 'set-pos';
             return xyPosition.call(self, $.extend(
               optSetXorY(options, directionValue),

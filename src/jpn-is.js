@@ -1,8 +1,8 @@
-;"use strict";
+;
 
 var jpn = jpn || {};
 
-(function () {
+(function () { "use strict"
 
   var
 
